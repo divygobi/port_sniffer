@@ -2,11 +2,15 @@
 //We are using this to read in arguments from the command line, as you can see in line 37
 use std::env;
 
+// use std::fmt::Arguments;
 //This thing lets us do net stuff, have an IpAddr that has the properties of an ip address
 use std::net::IpAddr;
+// use std::os::unix::process;
+use std::process::exit;
 //I think this is some shit to convert a string to the u16 thread, or the Ip
 use std::str::FromStr;
-
+use std::sync::mpsc::channel;
+// use std::sync::mpsc;
 
 //This is a type/struct, in other languages like java, you would define methods here, but it seems in Rust we only store MEMBERS of a struct here
 struct Arguments{
@@ -34,7 +38,7 @@ impl Arguments{
                     return Err("Help");
                 }
                 else {
-                    return Err("Your argument is not valid man, try -h, or -help for help")
+                    return Err("Your argument is not valid man, try -h,")
                 }
             }
             4 => {
@@ -59,24 +63,34 @@ impl Arguments{
                     });
                 }
                 else{
-                    return Err("Your arguments are not valid man, try -h, or -help for help")
+                    return Err("Your arguments are not valid man, try -h,")
                 }
             }
             _ => {
-                return Err("This has way too many argments or you are putting some nonsense in, try calling this with -h, or -help")
+                return Err("This has way too many argments or you are putting some nonsense in, try calling this with -h,")
             }
-
         }
+        // return Err("Something went horribly wrong")
     }
 }
 fn main() {
-    //collects all our arguments into a vector of strings
-    //this variable is stored on the heap, so it can grow and shrink at runtime, this is a property of a vector
     let args: Vec<String> = env::args().collect();
+    let program = args[0].clone();
+    let arguments = match Arguments::new(&args){
+        Ok(args) => args,
+        Err(e) => {
+            if e.contains("help"){
+                exit(0);
+            }
+            else{
+                eprintln!("{} problem parsing the arguments: {}", program, e);
+                exit(0);
+            }
+        }
+    };
+    println!("{} is the ip", arguments.ip_addr.to_string());
+    let num_threads = arguments.threads;
+    // let (tx, rx) = channel();
 
-    //All of these are all in the heap given that they are STRINGS, Strings are actually just collections of u8s,  they are just a collection(a group of stuff that grow) of numbers in reality
-    let program_name = args[0].clone();  
-    let flag = args[1].clone();
-    let threads = args[2].clone();
-    let ip_addr = args[3].clone();
+
 }
